@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atalhos</title>
+    <style>
+	    /* style.css */
+	.botao-mac {
+    	width: 150px;
+    	height: 150px;
+    	border: none;
+    	border-radius: 20px;
+    	background-image: linear-gradient(180deg, #f7f7f7, #e7e7e7);
+    	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+    	font-size: 18px;
+    	font-weight: bold;
+    	color: #333;
+    	cursor: pointer;
+    	transition: all 0.2s ease-in-out;
+    	margin: 20px; /* Adicione essa linha */
+	}
+	
+	.botao-mac:hover {
+	    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
+	    transform: translateY(-2px);
+	}
+	
+	.botao-mac:active {
+	    box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
+	    transform: translateY(2px);
+	}
+    </style>
+</head>
+<body>    
+    <script>
+    
+    function criarElementoBotao(nome) {
+    	const botao = document.createElement('button');
+    	botao.textContent = nome;
+    	botao.classList.add('botao-mac');
+    	return botao;
+	}
+	
+	function adicionarEventoBotao(botao, link) {
+	    botao.addEventListener('click', () => {
+	        window.open(link, '_blank');
+	    });
+	}
+	
+	function adicionarBotaoAoBody(nome, link) {
+	    const botao = criarElementoBotao(nome);
+	    adicionarEventoBotao(botao, link);
+	    document.body.appendChild(botao);
+	}
+	
+	// Exemplo de uso
+	adicionarBotaoAoBody('Clique aqui', 'https://www.example.com');
+	adicionarBotaoAoBody('Clique aqui', 'https://www.example.com');
+	adicionarBotaoAoBody('Clique aqui', 'https://www.example.com');
+    
+    </script>
+</body>
+</html>
