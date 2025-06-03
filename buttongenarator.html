@@ -111,7 +111,8 @@
 	        const botaoElement = criarElementoBotao(botao);
 	        adicionarEventoBotao(botaoElement, botao.link);
 	        document.body.appendChild(botaoElement);
-        	mudarCor(botaoElement);
+            setTimeout(() => mudarCor(botaoElement), 100); // chamar mudarCor após 100ms
+    
 	    });
 	}
 
@@ -119,13 +120,19 @@
     
     /**
     * Cada botão tem uma cor aleatória e diferente e 
-    * muda ao longo do tempo aleatório.
+    * muda ao longo do tempo aleatório
     */
+    const cores = [
+	    { base: '#ADD8E6', top: '#B2E6CE' }, // azul claro
+	    { base: '#FFD7BE', top: '#FFE4CC' }, // laranja claro
+	    { base: '#C6F4D6', top: '#D6FFCE' }, // verde claro
+	    { base: '#FFC5C5', top: '#FFD7D7' }, // rosa claro/vermelho claro
+	    { base: '#FFB6C1', top: '#FFC2C7' }  // rosa claro
+	];
+    
     function getRandomColor() {
-	    const r = Math.floor(Math.random() * 256);
-	    const g = Math.floor(Math.random() * 256);
-	    const b = Math.floor(Math.random() * 256);
-	    return `rgb(${r}, ${g}, ${b})`;
+    	const index = Math.floor(Math.random() * cores.length);
+    	return `linear-gradient(0deg, ${cores[index].base}, ${cores[index].top})`;
 	}
 	
 	function getRandomInterval() {
@@ -134,9 +141,9 @@
 	}
 	
 	function mudarCor(botao) {
-	        botao.style.backgroundImage = `linear-gradient(0deg, ${getRandomColor()}, ${getRandomColor()})`;
-	        const intervalo = getRandomInterval();
-	        setTimeout(() => mudarCor(botao), intervalo);
+    	botao.style.backgroundImage = getRandomColor();
+    	const intervalo = getRandomInterval();
+    	setTimeout(() => mudarCor(botao), intervalo);
 	}
     
     </script>
