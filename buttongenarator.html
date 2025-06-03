@@ -27,7 +27,20 @@
     	flex-direction: center;
     	align-items: center;
     	justify-content: center;
-	}		
+    	animation: pulsar 2s infinite;
+	}
+	
+	@keyframes pulsar {
+    	0% {
+    	    transform: scale(1);
+    	}
+    	50% {
+    	    transform: scale(1.025);
+    	}
+    	100% {
+    	    transform: scale(1);
+    	}
+	}
     	
 	.botao-mac:hover {
 	    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
