@@ -56,8 +56,19 @@
 	} **/
     	
 	.botao-mac:hover {
-	    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
-	    transform: translateY(-2px);
+	    animation: pulsar-hover 1.5s infinite;
+	}
+    
+    @keyframes pulsar-hover {
+	    0% {
+	        transform: scale(1.05);
+	    }
+	    50% {
+	        transform: scale(1.15);
+	    }
+	    100% {
+	        transform: scale(1.05);
+	    }
 	}
 	
 	.botao-mac:active {
