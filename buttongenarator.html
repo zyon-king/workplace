@@ -6,6 +6,9 @@
     <title>Atalhos</title>
     <style>
 	    /* style.css */
+	body {
+		text-align: center;
+	}
 	.botao-mac {
     	width: 150px;
     	height: 150px;
@@ -18,9 +21,14 @@
     	color: #333;
     	cursor: pointer;
     	transition: all 0.2s ease-in-out;
-    	margin: 20px; /* Adicione essa linha */
-	}
-	
+    	margin: 20px 20px;
+        
+    	display: center;
+    	flex-direction: center;
+    	align-items: center;
+    	justify-content: center;
+	}		
+    	
 	.botao-mac:hover {
 	    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
 	    transform: translateY(-2px);
@@ -30,34 +38,57 @@
 	    box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
 	    transform: translateY(2px);
 	}
+    
+    .botao-conteudo {
+	    font-size: 18px;
+	    font-weight: bold;
+	    color: #333;
+	}
+    
     </style>
 </head>
 <body>    
     <script>
+    const botoes = [
+    	{
+    	    icone: '📁',
+    	    nome: 'Google',
+    	    link: 'https://www.google.com'
+    	},
+    	{
+    	    icone: '📁',
+    	    nome: 'Facebook',
+    	    link: 'https://www.facebook.com'
+    	},
+    	{
+    	    icone: '📁',
+    	    nome: 'Instagram',
+    	    link: 'https://www.instagram.com'
+    	}
+	];
     
-    function criarElementoBotao(nome) {
-    	const botao = document.createElement('button');
-    	botao.textContent = nome;
-    	botao.classList.add('botao-mac');
-    	return botao;
+    function criarElementoBotao(botao) {
+	    const botaoElement = document.createElement('button');
+	    botaoElement.innerHTML = `<div class="botao-conteudo">${botao.icone}<br>${botao.nome}</div>`;
+	    botaoElement.classList.add('botao-mac');
+	    return botaoElement;
 	}
 	
-	function adicionarEventoBotao(botao, link) {
-	    botao.addEventListener('click', () => {
+	function adicionarEventoBotao(botaoElement, link) {
+	    botaoElement.addEventListener('click', () => {
 	        window.open(link, '_blank');
 	    });
 	}
 	
-	function adicionarBotaoAoBody(nome, link) {
-	    const botao = criarElementoBotao(nome);
-	    adicionarEventoBotao(botao, link);
-	    document.body.appendChild(botao);
+	function adicionarBotoesAoBody(botoes) {
+	    botoes.forEach(botao => {
+	        const botaoElement = criarElementoBotao(botao);
+	        adicionarEventoBotao(botaoElement, botao.link);
+	        document.body.appendChild(botaoElement);
+	    });
 	}
-	
-	// Exemplo de uso
-	adicionarBotaoAoBody('Clique aqui', 'https://www.example.com');
-	adicionarBotaoAoBody('Clique aqui', 'https://www.example.com');
-	adicionarBotaoAoBody('Clique aqui', 'https://www.example.com');
+
+	adicionarBotoesAoBody(botoes);
     
     </script>
 </body>
