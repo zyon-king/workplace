@@ -8,6 +8,7 @@
 	    /* style.css */
 	body {
 		text-align: center;
+    	background: #3f0b48; 
 	}
 	.botao-mac {
     	width: 150px;
@@ -15,7 +16,7 @@
     	border: none;
     	border-radius: 20px;
     	background-image:/*linear-gradient(135deg, #f7f7f7, #e7e7e7)*/; 
-    	box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+    	box-shadow: 0px 0px 4px rgba(255, 255, 255, 0.2);
     	font-size: 18px;
     	font-weight: bold;
     	color: #333;
@@ -27,52 +28,15 @@
     	flex-direction: center;
     	align-items: center;
     	justify-content: center;
-        animation: pulsar 2.5s infinite, mudar-cor 2s infinite;
 	}
-	
-	@keyframes pulsar {
-    	0% {
-    	    transform: scale(1);
-    	}
-    	50% {
-    	    transform: scale(1.020);
-    	}
-    	100% {
-    	    transform: scale(1);
-    	}
-	}
-    
-    /**
-    @keyframes mudar-cor {
-	    0% {
-	        background-image: linear-gradient(0deg, rgb(255, 0, 0), rgb(255, 128, 0));
-	    }
-	    50% {
-	        background-image: linear-gradient(0deg, rgb(0, 255, 0), rgb(255, 128, 0));
-	    }
-	    100% {
-	        background-image: linear-gradient(0deg, rgb(0, 0, 255), rgb(255, 128, 0));
-	    }
-	} **/
+
     	
 	.botao-mac:hover {
 	    animation: pulsar-hover 1.5s infinite;
 	}
-    
-    @keyframes pulsar-hover {
-	    0% {
-	        transform: scale(1.05);
-	    }
-	    50% {
-	        transform: scale(1.15);
-	    }
-	    100% {
-	        transform: scale(1.05);
-	    }
-	}
 	
 	.botao-mac:active {
-	    box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.2);
+	    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 	    transform: translateY(2px);
 	}
     
@@ -80,27 +44,33 @@
 	    font-size: 18px;
 	    font-weight: bold;
 	    color: #333;
+        animation: pulsar 2.5s infinite, mudar-cor 2s infinite;
 	}
     
     </style>
 </head>
-<body>    
+<body>
     <script>
     const botoes = [
     	{
     	    icone: '📁',
-    	    nome: 'Google',
-    	    link: 'https://www.google.com'
+    	    nome: 'Google Lg',
+    	    link: 'https://tplogin.teleperformance.com.br/tploginweb/'
     	},
     	{
     	    icone: '📁',
-    	    nome: 'Facebook',
-    	    link: 'https://www.facebook.com'
+    	    nome: 'Outlook',
+    	    link: 'http://outlook.office.com/'
     	},
     	{
     	    icone: '📁',
     	    nome: 'Instagram',
-    	    link: 'https://www.instagram.com'
+    	    link: 'https://minhaescala.teleperformance.com.br/pt_BR/group/webstation/my-schedule?&viewFormat=monthly'
+    	},
+        {
+    	    icone: '📁',
+    	    nome: 'Bing',
+    	    link: 'https://www.seadc.ccms.teleperformance.com/cgi-bin/home.pl'
     	}
 	];
     
@@ -133,17 +103,24 @@
     * Cada botão tem uma cor aleatória e diferente e 
     * muda ao longo do tempo aleatório
     */
-    const cores = [
-	    { base: '#ADD8E6', top: '#B2E6CE' }, // azul claro
-	    { base: '#FFD7BE', top: '#FFE4CC' }, // laranja claro
-	    { base: '#C6F4D6', top: '#D6FFCE' }, // verde claro
-	    { base: '#FFC5C5', top: '#FFD7D7' }, // rosa claro/vermelho claro
-	    { base: '#FFB6C1', top: '#FFC2C7' }  // rosa claro
+	const cores = [
+		{ base: '#a9cee4', top: '#B2E6CE' }, // azul claro
+		{ base: '#FFD7BE', top: '#FFE4CC' }, // laranja claro
+		{ base: '#C6F4D6', top: '#D6FFCE' }, // verde claro
+		{ base: '#FFC5C5', top: '#FFD7D7' }, // rosa claro/vermelho claro
+		{ base: '#FFB6C1', top: '#FFC2C7' }, // rosa claro
+		{ base: '#87CEEB', top: '#ADD8E6' }, // azul céu
+		{ base: '#F0E68C', top: '#FFFFE0' }, // amarelo claro
+		{ base: '#C9E4CA', top: '#E6F5D8' }, // verde menta
+		{ base: '#FF99CC', top: '#FFC5C5' }, // rosa pastel
+		{ base: '#C5CAE9', top: '#D7D9F4' }, // azul lavanda
+		{ base: '#4aff4a', top: '#a3ffa3' }, // verde lima
+		{ base: '#FFA07A', top: '#FFC499' }, // laranja coral
 	];
     
-    function getRandomColor() {
-    	const index = Math.floor(Math.random() * cores.length);
-    	return `linear-gradient(0deg, ${cores[index].base}, ${cores[index].top})`;
+    	function getRandomColor() {
+    		const index = Math.floor(Math.random() * cores.length);
+    		return `linear-gradient(0deg, ${cores[index].base}, ${cores[index].top})`;
 	}
 	
 	function getRandomInterval() {
@@ -152,9 +129,9 @@
 	}
 	
 	function mudarCor(botao) {
-    	botao.style.backgroundImage = getRandomColor();
-    	const intervalo = getRandomInterval();
-    	setTimeout(() => mudarCor(botao), intervalo);
+    		botao.style.backgroundImage = getRandomColor();
+    		const intervalo = getRandomInterval();
+    		setTimeout(() => mudarCor(botao), intervalo);
 	}
     
     </script>
