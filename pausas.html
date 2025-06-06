@@ -6,17 +6,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notificações</title>
+    <style>
+    	body {
+    		text-align: center;
+    		background: ; /* Altere essa linha para a cor desejada */
+		}
+    </style>
     
-    <link rel="stylesheet" href="https://cdn.statically.io/gh/zyon-king/granular/main/style.css">
+    <link rel="stylesheet" href="https://cdn.statically.io/gh/zyon-king/granular/main/style.css/purge/">
     
 </head>
 
 <body>
-    <div id="mensagem"></div>
+	<button id="teste-notificacao">Testar Notificação</button>
+        <hr>
+    
+    <div>
+    	<label for="nome-pausa">Nome da pausa:</label>
+	    <input type="text" id="nome-pausa">
+	</div>
+	<div>
+	    <label for="inicio-pausa">Início da pausa (HH:mm):</label>
+	    <input type="time" id="inicio-pausa">
+	</div>
+	<div>
+	    <label for="fim-pausa">Fim da pausa (HH:mm):</label>
+	    <input type="time" id="fim-pausa">
+	</div>
+	<button id="adicionar-pausa">Adicionar pausa</button>
+	<div id="lista-pausas"></div>
     
     <script src="https://cdn.statically.io/gh/zyon-king/granular/main/notificacoes.js"></script>
 
 	<script src="https://cdn.statically.io/gh/zyon-king/granular/main/mensagens.js"></script>
+    
+    <script>
+	
+    let pausas = [];
+
+	function adicionarPausa() {
+	    const nomePausa = document.getElementById('nome-pausa').value;
+	    const inicioPausa = document.getElementById('inicio-pausa').value;
+	    const fimPausa = document.getElementById('fim-pausa').value;
+	    const [horaInicio, minutoInicio] = inicioPausa.split(':');
+	    const [horaFim, minutoFim] = fimPausa.split(':');
+	    const agora = new Date();
+	    const dataInicioPausa = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), horaInicio, minutoInicio);
+	    const dataFimPausa = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), horaFim, minutoFim);
+	    if (dataInicioPausa < agora) {
+	        dataInicioPausa.setDate(dataInicioPausa.getDate() + 1);
+	        dataFimPausa.setDate(dataFimPausa.getDate() + 1);
+	    }
+	    if (dataFimPausa < dataInicioPausa) {
+	        dataFimPausa.setDate(dataFimPausa.getDate() + 1);
+	    }
+	    pausas.push({ nome: nomePausa, inicio: dataInicioPausa, fim: dataFimPausa });
+	    pausas.sort((a, b) => a.inicio - b.inicio);
+	    mostrarPausas();
+	    verificarPausas();
+	}
+	
+	function mostrarPausas() {
+	    const listaPausas = document.getElementById('lista-pausas');
+	    listaPausas.innerHTML = '';
+	    pausas.forEach((pausa, index) => {
+	        const divPausa = document.createElement('div');
+	        divPausa.textContent = `${pausa.nome} - Início: ${formatarData(pausa.inicio)} - Fim: ${formatarData(pausa.fim)}`;
+	        listaPausas.appendChild(divPausa);
+	    });
+	}
+	
+	function notificarPausa() {
+	    const agora = new Date();
+	    pausas.forEach((pausa) => {
+	        if (agora.getHours() === pausa.inicio.getHours() && agora.getMinutes() === pausa.inicio.getMinutes() && agora.getSeconds() === pausa.inicio.getSeconds()) {
+	            if (isPermissionGranted()) {
+	                new Notification(`Início da pausa ${pausa.nome}!`);
+	            } else {
+	                showError("Permissão para notificações não foi concedida.");
+	            }
+	        }
+	        if (agora.getHours() === pausa.fim.getHours() && agora.getMinutes() === pausa.fim.getMinutes() && agora.getSeconds() === pausa.fim.getSeconds()) {
+	            if (isPermissionGranted()) {
+	                new Notification(`Fim da pausa ${pausa.nome}!`);
+	            } else {
+	                showError("Permissão para notificações não foi concedida.");
+	            }
+	        }
+	    });
+	    setTimeout(notificarPausa, 1000); // Verificar a cada segundo
+	}
+	
+	// Iniciar a verificação quando a página carrega
+	document.addEventListener('DOMContentLoaded', () => {
+	    notificarPausa();
+	});
+	
+	function formatarData(data) {
+	    const hora = data.getHours().toString().padStart(2, '0');
+	    const minuto = data.getMinutes().toString().padStart(2, '0');
+	    return `${hora}:${minuto}`;
+	}
+	
+	document.getElementById('adicionar-pausa').addEventListener('click', adicionarPausa);
+verificarPausas();
+	
+	</script>
+    
 
 </body>
 
