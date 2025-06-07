@@ -100,7 +100,12 @@
 	</div>
 	<div>
 	    <label for="inicio-pausa">Início da pausa (HH:mm):</label>
-	    <input type="time" id="inicio-pausa">
+	    <div>
+		  <label for="hora">Hora:</label>
+		  <select id="hora"></select>
+		  <label for="minuto">Minuto:</label>
+		  <select id="minuto"></select>
+		</div>
 	</div>
 	<div>
 	    <label for="fim-pausa">Fim da pausa (HH:mm):</label>
@@ -112,7 +117,7 @@
     <script src="https://cdn.statically.io/gh/zyon-king/granular/main/notificacoes.js"></script>
     
 	<script>
-	// Certifique-se de que o elemento esteja presente no DOM antes de adicionar o evento
+	// Teste de notificacao
 	document.getElementById('teste-notificacao').addEventListener('click', askForNotificationPermission);
     
     document.addEventListener('DOMContentLoaded', function() {
@@ -129,6 +134,19 @@
 	        });
 	    }
 	}); 
+    
+    function gerarOpcoes(seletor, inicio, fim, incremento) {
+	  const select = document.getElementById(seletor);
+	  for (let i = inicio; i <= fim; i += incremento) {
+	    const option = document.createElement('option');
+	    option.value = String(i).padStart(2, '0');
+	    option.text = String(i).padStart(2, '0');
+	    select.appendChild(option);
+	  }
+	}
+
+	gerarOpcoes('hora', 0, 23, 1);
+	gerarOpcoes('minuto', 0, 59, 1);
     
 	function validarCampos() {
 	    const nomePausa = document.getElementById('nome-pausa').value.trim();
