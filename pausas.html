@@ -41,7 +41,24 @@
 	<script src="https://cdn.statically.io/gh/zyon-king/granular/main/mensagens.js"></script>
     
     <script>
-	
+	// Certifique-se de que o elemento esteja presente no DOM antes de adicionar o evento
+	document.getElementById('teste-notificacao').addEventListener('click', askForNotificationPermission);
+    
+    document.addEventListener('DOMContentLoaded', function() {
+	    const botaoTeste = document.getElementById('teste-notificacao');
+	    if (botaoTeste) {
+	        botaoTeste.addEventListener('click', function() {
+	            if (isPermissionGranted()) {
+	                new Notification('Notificação de teste', {
+	                    body: 'Essa é uma notificação de teste!',
+	                });
+	            } else {
+	                showError("Permissão para notificações não foi concedida.");
+	            }
+	        });
+	    }
+	});    
+    
     let pausas = [];
 
 	function adicionarPausa() {
