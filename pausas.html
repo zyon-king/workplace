@@ -171,14 +171,23 @@
 	}
 	
 	document.getElementById('adicionar-pausa').addEventListener('click', adicionarPausa);
-	
+    
 	function mostrarPausas() {
 	    const listaPausas = document.getElementById('lista-pausas');
 	    listaPausas.innerHTML = '';
 	    pausas.forEach((pausa, index) => {
 	        const divPausa = document.createElement('div');
-	        divPausa.textContent = `${pausa.nome} - Início: ${formatarData(pausa.inicio)} - Fim: ${formatarData(pausa.fim)}`;
+	        divPausa.innerHTML = `
+	            ${pausa.nome} - Início: ${formatarData(pausa.inicio)} - Fim: ${formatarData(pausa.fim)}
+	            <button class="lixeira" data-index="${index}">Excluir</button>
+	        `;
 	        listaPausas.appendChild(divPausa);
+	
+	        // Adicione um evento de clique ao botão de lixeira
+	        const botaoLixeira = divPausa.querySelector('.lixeira');
+	        botaoLixeira.addEventListener('click', () => {
+	            excluirPausa(index);
+	        });
 	    });
 	}
 	
@@ -225,6 +234,15 @@ verificarPausas();
 	        if (agora >= pausa.inicio && agora <= pausa.fim) {
 	            console.log(`Pausa ${pausa.nome} está ativa`);
 	        }
+	    });
+	}
+    
+    function excluirPausa(index) {
+	    showConfirmation("Tem certeza que deseja excluir esta pausa?", () => {
+	        pausas.splice(index, 1);
+	        mostrarPausas();
+	    }, () => {
+	        // Não faça nada se o usuário cancelar
 	    });
 	}
 	
