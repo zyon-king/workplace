@@ -112,7 +112,24 @@
     <script src="https://cdn.statically.io/gh/zyon-king/granular/main/notificacoes.js"></script>
     
 	<script>
-	
+	// Certifique-se de que o elemento esteja presente no DOM antes de adicionar o evento
+	document.getElementById('teste-notificacao').addEventListener('click', askForNotificationPermission);
+    
+    document.addEventListener('DOMContentLoaded', function() {
+	    const botaoTeste = document.getElementById('teste-notificacao');
+	    if (botaoTeste) {
+	        botaoTeste.addEventListener('click', function() {
+	            if (isPermissionGranted()) {
+	                new Notification('Notificação de teste', {
+	                    body: 'Essa é uma notificação de teste!',
+	                });
+	            } else {
+	                showError("Permissão para notificações não foi concedida.");
+	            }
+	        });
+	    }
+	}); 
+    
 	function validarCampos() {
 	    const nomePausa = document.getElementById('nome-pausa').value.trim();
 	    const inicioPausa = document.getElementById('inicio-pausa').value;
@@ -125,13 +142,88 @@
 	
 	    return true;
 	}   
-      	        			
-	document.getElementById('adicionar-pausa').addEventListener('click', function() {
-	    if (validarCampos()) {
-	        adicionarPausa();
-	    }
-	});
     
+    let pausas = [];
+
+	function adicionarPausa() {
+    	if (!validarCampos()) {
+    	    return;
+        
+	    const nomePausa = document.getElementById('nome-pausa').value;
+	    const inicioPausa = document.getElementById('inicio-pausa').value;
+	    const fimPausa = document.getElementById('fim-pausa').value;
+	    const [horaInicio, minutoInicio] = inicioPausa.split(':');
+	    const [horaFim, minutoFim] = fimPausa.split(':');
+	    const agora = new Date();
+	    const dataInicioPausa = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), horaInicio, minutoInicio);
+	    const dataFimPausa = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), horaFim, minutoFim);{
+	    if (dataInicioPausa < agora) {
+	        dataInicioPausa.setDate(dataInicioPausa.getDate() + 1);
+	        dataFimPausa.setDate(dataFimPausa.getDate() + 1);
+	    }
+	    if (dataFimPausa < dataInicioPausa) {
+	        dataFimPausa.setDate(dataFimPausa.getDate() + 1);
+	    }
+	    pausas.push({ nome: nomePausa, inicio: dataInicioPausa, fim: dataFimPausa });
+	    pausas.sort((a, b) => a.inicio - b.inicio);
+	    mostrarPausas();
+	
+	function mostrarPausas() {
+	    const listaPausas = document.getElementById('lista-pausas');
+	    listaPausas.innerHTML = '';
+	    pausas.forEach((pausa, index) => {
+	        const divPausa = document.createElement('div');
+	        divPausa.textContent = `${pausa.nome} - Início: ${formatarData(pausa.inicio)} - Fim: ${formatarData(pausa.fim)}`;
+	        listaPausas.appendChild(divPausa);
+	    });
+	}
+	
+	function notificarPausa() {
+	    const agora = new Date();
+	    pausas.forEach((pausa) => {
+	        if (agora.getHours() === pausa.inicio.getHours() && agora.getMinutes() === pausa.inicio.getMinutes() && agora.getSeconds() === pausa.inicio.getSeconds()) {
+	            if (isPermissionGranted()) {
+	                new Notification(`Início da pausa ${pausa.nome}!`);
+	            } else {
+	                showError("Permissão para notificações não foi concedida.");
+	            }
+	        }
+	        if (agora.getHours() === pausa.fim.getHours() && agora.getMinutes() === pausa.fim.getMinutes() && agora.getSeconds() === pausa.fim.getSeconds()) {
+	            if (isPermissionGranted()) {
+	                new Notification(`Fim da pausa ${pausa.nome}!`);
+	            } else {
+	                showError("Permissão para notificações não foi concedida.");
+	            }
+	        }
+	    });
+	    setTimeout(notificarPausa, 1000); // Verificar a cada segundo
+	}
+	
+	// Iniciar a verificação quando a página carrega
+	document.addEventListener('DOMContentLoaded', () => {
+	    notificarPausa();
+	});
+	
+	function formatarData(data) {
+	    const formatter = new Intl.DateTimeFormat('pt-BR', {
+	        hour: '2-digit',
+	        minute: '2-digit'
+	    });
+	    return formatter.format(data);
+	}
+	
+	document.getElementById('adicionar-pausa').addEventListener('click', adicionarPausa);
+verificarPausas();
+
+	function verificarPausas() {
+	    const agora = new Date();
+	    pausas.forEach((pausa) => {
+	        if (agora >= pausa.inicio && agora <= pausa.fim) {
+	            console.log(`Pausa ${pausa.nome} está ativa`);
+	        }
+	    });
+	}
+	
 	</script>
 
     <script>
