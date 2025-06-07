@@ -141,14 +141,15 @@
 	    }
 	
 	    return true;
-	}   
+	} 
     
     let pausas = [];
 
 	function adicionarPausa() {
-    	if (!validarCampos()) {
-    	    return;
-        
+	    if (!validarCampos()) {
+	        return;
+	    }
+	
 	    const nomePausa = document.getElementById('nome-pausa').value;
 	    const inicioPausa = document.getElementById('inicio-pausa').value;
 	    const fimPausa = document.getElementById('fim-pausa').value;
@@ -156,7 +157,7 @@
 	    const [horaFim, minutoFim] = fimPausa.split(':');
 	    const agora = new Date();
 	    const dataInicioPausa = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), horaInicio, minutoInicio);
-	    const dataFimPausa = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), horaFim, minutoFim);{
+	    const dataFimPausa = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), horaFim, minutoFim);
 	    if (dataInicioPausa < agora) {
 	        dataInicioPausa.setDate(dataInicioPausa.getDate() + 1);
 	        dataFimPausa.setDate(dataFimPausa.getDate() + 1);
@@ -167,6 +168,9 @@
 	    pausas.push({ nome: nomePausa, inicio: dataInicioPausa, fim: dataFimPausa });
 	    pausas.sort((a, b) => a.inicio - b.inicio);
 	    mostrarPausas();
+	}
+	
+	document.getElementById('adicionar-pausa').addEventListener('click', adicionarPausa);
 	
 	function mostrarPausas() {
 	    const listaPausas = document.getElementById('lista-pausas');
