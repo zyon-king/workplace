@@ -261,10 +261,35 @@
                 justify-content: flex-end;
             }
         }
+        
+        #mensagem {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            display: none; /* Inicia oculto */
+        }
+        #mensagem.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        #mensagem.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+	<div id="testes">
+    	<button id="teste-notificacao">Testar Notificação</button>
+    </div>
+    
+    <hr>
+
+	<div class="container">
         <h2>Controle de Pausa</h2>
         
         <div class="form-group">
@@ -329,8 +354,41 @@
             </div>
         </div>
     </div>
-
+	
+    <script src="https://cdn.statically.io/gh/zyon-king/granular/main/notificacoes.js"></script>
+    
+	
     <script>
+		// incio do bloco teste de notificacao
+		document.getElementById('teste-notificacao').addEventListener('click', askForNotificationPermission);
+    	
+    	document.addEventListener('DOMContentLoaded', function() {
+		    const botaoTeste = document.getElementById('teste-notificacao');
+		    if (botaoTeste) {
+		        botaoTeste.addEventListener('click', function() {
+		            if (isPermissionGranted()) {
+		                new Notification('Notificação de teste', {
+		                    body: 'Essa é uma notificação de teste!',
+		                });
+		            } else {
+		                showError("Permissão para notificações não foi concedida.");
+		            }
+		        });
+		    }
+		}); 
+    	// fim do bloco teste de notificacao
+        
+        function notificar(titulo, mensagem) {
+            if (isPermissionGranted()) {
+                new Notification(titulo, {
+                    body: mensagem,
+                });
+            } else {
+                console.error("Permissão para notificações não foi concedida.");
+            }
+        }
+    
+    
         // Função para preencher as opções de hora/minuto em um select
         function populateSelect(selectElement, start, end) {
             for (let i = start; i < end; i++) {
@@ -475,6 +533,39 @@
                     listaPausasContainer.appendChild(novaMensagemVazia);
                 }
             });
+            
+            // Agendar notificações
+            const agora = new Date();
+            const inicioDate = new Date();
+            const [horaInicio, minutoInicio] = inicio.split(':').map(Number);
+            inicioDate.setHours(horaInicio);
+            inicioDate.setMinutes(minutoInicio);
+            inicioDate.setSeconds(0);
+
+            const fimDate = new Date();
+            const [horaFim, minutoFim] = fim.split(':').map(Number);
+            fimDate.setHours(horaFim);
+            fimDate.setMinutes(minutoFim);
+            fimDate.setSeconds(0);
+
+            // Se a pausa já passou, não agendar
+            if (inicioDate < agora) {
+                inicioDate.setDate(inicioDate.getDate() + 1); // Para o dia seguinte
+            }
+            if (fimDate < inicioDate) {
+                fimDate.setDate(fimDate.getDate() + 1); // Para o dia seguinte se necessário
+            }
+
+            const tempoParaInicio = inicioDate.getTime() - agora.getTime();
+            const tempoParaFim = fimDate.getTime() - agora.getTime();
+
+            setTimeout(() => {
+                notificar("Pausa Iniciada", "Sua pausa de " + duracaoTexto + " começou.");
+            }, tempoParaInicio);
+
+            setTimeout(() => {
+                notificar("Pausa Terminada", "Sua pausa de " + duracaoTexto + " terminou.");
+            }, tempoParaFim);
 
             listaPausasContainer.appendChild(pausaItem);
         }
@@ -518,365 +609,6 @@
             mensagemVazia.textContent = 'Nenhuma pausa agendada ainda.';
             listaPausasContainer.appendChild(mensagemVazia);
         }
-    </script>
-</body>
-</html>
-
-/******/
-
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testar Mensagem de Erro</title>
-    <style>
-        /* CSS */
-        .popup {        
-  			animation: ;
-            position: fixed;
-  			top: 0;
-  			left: 0;
-  			transform: ;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        @keyframes popupSlideIn {
-		  from {
-		    opacity: 0;
-		    transform: translate(-50%, -60%);
-		  }
-		  to {
-		    opacity: ;
-		    transform: translate(-50%, -50%);
-		  }
-		}
-
-        .popup-content {
-        	animation: popupSlideIn 0.3s ease-in-out;
-  			position: fixed;
-  			top: 50%;
-  			left: 50%;
-  			transform: translate(-50%, -50%); /* Isso é importante para centralizar */
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .popup-content.error {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-        }
-
-        .popup-content.success {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-
-        .popup-content.confirm {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-        }
-        
-        .popup-icon {
-		  font-size: 36px; /* ajuste o tamanho aqui */
-		}
-
-        .popup-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .popup-btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            min-width: 100px;
-        }
-
-        .popup-btn-primary {
-            background-color: #007bff;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-	<div id="testes">
-    	<button id="testar-sucesso">Testar Mensagem de Sucesso</button>
-    	<button id="testar-confirmacao">Testar Mensagem de Confirmação</button>
-    	<button id="testar-erro">Testar Mensagem de Erro</button>
-    </div>
-    
-    	<button id="teste-notificacao">Testar Notificação</button>
-        <hr>
-    
-    <div>
-    	<label for="nome-pausa">Nome da pausa:</label>
-	    <input type="text" id="nome-pausa">
-	</div>
-	<div>
-	    <label for="inicio-pausa">Início da pausa (HH:mm):</label>
-	    <div>
-		  <label for="hora">Hora:</label>
-		  <select id="hora"></select>
-		  <label for="minuto">Minuto:</label>
-		  <select id="minuto"></select>
-		</div>
-	</div>
-	<div>
-	    <label for="fim-pausa">Fim da pausa (HH:mm):</label>
-	    <input type="time" id="fim-pausa">
-	</div>
-	<button id="adicionar-pausa">Adicionar pausa</button>
-	<div id="lista-pausas"></div>
-	
-    <script src="https://cdn.statically.io/gh/zyon-king/granular/main/notificacoes.js"></script>
-    
-	<script>
-	// Teste de notificacao
-	document.getElementById('teste-notificacao').addEventListener('click', askForNotificationPermission);
-    
-    document.addEventListener('DOMContentLoaded', function() {
-	    const botaoTeste = document.getElementById('teste-notificacao');
-	    if (botaoTeste) {
-	        botaoTeste.addEventListener('click', function() {
-	            if (isPermissionGranted()) {
-	                new Notification('Notificação de teste', {
-	                    body: 'Essa é uma notificação de teste!',
-	                });
-	            } else {
-	                showError("Permissão para notificações não foi concedida.");
-	            }
-	        });
-	    }
-	}); 
-    
-    function gerarOpcoes(seletor, inicio, fim, incremento) {
-	  const select = document.getElementById(seletor);
-	  for (let i = inicio; i <= fim; i += incremento) {
-	    const option = document.createElement('option');
-	    option.value = String(i).padStart(2, '0');
-	    option.text = String(i).padStart(2, '0');
-	    select.appendChild(option);
-	  }
-	}
-
-	gerarOpcoes('hora', 0, 23, 1);
-	gerarOpcoes('minuto', 0, 59, 1);
-    
-	function validarCampos() {
-	    const nomePausa = document.getElementById('nome-pausa').value.trim();
-	    const inicioPausa = document.getElementById('inicio-pausa').value;
-	    const fimPausa = document.getElementById('fim-pausa').value;
-	
-	    if (nomePausa === '' || inicioPausa === '' || fimPausa === '') {
-	        showError("Por favor, preencha todos os campos.");
-	        return false;
-	    }
-	
-	    return true;
-	} 
-    
-    let pausas = [];
-
-	function adicionarPausa() {
-	    if (!validarCampos()) {
-	        return;
-	    }
-	
-	    const nomePausa = document.getElementById('nome-pausa').value;
-	    const inicioPausa = document.getElementById('inicio-pausa').value;
-	    const fimPausa = document.getElementById('fim-pausa').value;
-	    const [horaInicio, minutoInicio] = inicioPausa.split(':');
-	    const [horaFim, minutoFim] = fimPausa.split(':');
-	    const agora = new Date();
-	    const dataInicioPausa = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), horaInicio, minutoInicio);
-	    const dataFimPausa = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate(), horaFim, minutoFim);
-	    if (dataInicioPausa < agora) {
-	        dataInicioPausa.setDate(dataInicioPausa.getDate() + 1);
-	        dataFimPausa.setDate(dataFimPausa.getDate() + 1);
-	    }
-	    if (dataFimPausa < dataInicioPausa) {
-	        dataFimPausa.setDate(dataFimPausa.getDate() + 1);
-	    }
-	    pausas.push({ nome: nomePausa, inicio: dataInicioPausa, fim: dataFimPausa });
-	    pausas.sort((a, b) => a.inicio - b.inicio);
-	    mostrarPausas();
-	}
-	
-	document.getElementById('adicionar-pausa').addEventListener('click', adicionarPausa);
-    
-	function mostrarPausas() {
-	    const listaPausas = document.getElementById('lista-pausas');
-	    listaPausas.innerHTML = '';
-	    pausas.forEach((pausa, index) => {
-	        const divPausa = document.createElement('div');
-	        divPausa.innerHTML = `
-	            ${pausa.nome} - Início: ${formatarData(pausa.inicio)} - Fim: ${formatarData(pausa.fim)}
-	            <button class="lixeira" data-index="${index}">Excluir</button>
-	        `;
-	        listaPausas.appendChild(divPausa);
-	
-	        // Adicione um evento de clique ao botão de lixeira
-	        const botaoLixeira = divPausa.querySelector('.lixeira');
-	        botaoLixeira.addEventListener('click', () => {
-	            excluirPausa(index);
-	        });
-	    });
-	}
-	
-	function notificarPausa() {
-	    const agora = new Date();
-	    pausas.forEach((pausa) => {
-	        if (agora.getHours() === pausa.inicio.getHours() && agora.getMinutes() === pausa.inicio.getMinutes() && agora.getSeconds() === pausa.inicio.getSeconds()) {
-	            if (isPermissionGranted()) {
-	                new Notification(`Início da pausa ${pausa.nome}!`);
-	            } else {
-	                showError("Permissão para notificações não foi concedida.");
-	            }
-	        }
-	        if (agora.getHours() === pausa.fim.getHours() && agora.getMinutes() === pausa.fim.getMinutes() && agora.getSeconds() === pausa.fim.getSeconds()) {
-	            if (isPermissionGranted()) {
-	                new Notification(`Fim da pausa ${pausa.nome}!`);
-	            } else {
-	                showError("Permissão para notificações não foi concedida.");
-	            }
-	        }
-	    });
-	    setTimeout(notificarPausa, 1000); // Verificar a cada segundo
-	}
-	
-	// Iniciar a verificação quando a página carrega
-	document.addEventListener('DOMContentLoaded', () => {
-	    notificarPausa();
-	});
-	
-	function formatarData(data) {
-	    const formatter = new Intl.DateTimeFormat('pt-BR', {
-	        hour: '2-digit',
-	        minute: '2-digit'
-	    });
-	    return formatter.format(data);
-	}
-	
-	document.getElementById('adicionar-pausa').addEventListener('click', adicionarPausa);
-verificarPausas();
-
-	function verificarPausas() {
-	    const agora = new Date();
-	    pausas.forEach((pausa) => {
-	        if (agora >= pausa.inicio && agora <= pausa.fim) {
-	            console.log(`Pausa ${pausa.nome} está ativa`);
-	        }
-	    });
-	}
-    
-    function excluirPausa(index) {
-	    showConfirmation("Tem certeza que deseja excluir esta pausa?", () => {
-	        pausas.splice(index, 1);
-	        mostrarPausas();
-	    }, () => {
-	        // Não faça nada se o usuário cancelar
-	    });
-	}
-	
-	</script>
-
-    <script>
-       
-       function showCustomPopup(type, icon, title, message, buttons) {
-           const popup = document.createElement('div');
-           popup.classList.add('popup');
-           const content = document.createElement('div');
-           if (type === 'error') {
-               content.classList.add('popup-content', 'error');
-           } else if (type === 'confirmation') {
-               content.classList.add('popup-content', 'confirm');
-           } else {
-               content.classList.add('popup-content', 'success');
-           }
-           popup.appendChild(content);
-           
-		if (icon) {
-			const iconEl = document.createElement('span');
-			iconEl.classList.add('popup-icon');
-			iconEl.innerHTML = icon;
-			content.appendChild(iconEl);
-	  	}
-          const titleEl = document.createElement('h2');
-          titleEl.textContent = title;
-          content.appendChild(titleEl);
-          const messageEl = document.createElement('p');
-          messageEl.textContent = message;
-          content.appendChild(messageEl);
-          const buttonsEl = document.createElement('div');
-          buttonsEl.classList.add('popup-buttons');
-          content.appendChild(buttonsEl);
-          buttons.forEach(button => {
-              const buttonEl = document.createElement('button');
-              buttonEl.textContent = button.text;
-              buttonEl.classList.add('popup-btn', 'popup-btn-primary');
-              buttonEl.addEventListener('click', () => {
-                  if (button.callback) {
-                      button.callback();
-                  }
-                  popup.remove();
-              });
-              buttonsEl.appendChild(buttonEl);
-          });
-           
-        // Permitir que os popups sejam fechados clicando fora
-		popup.addEventListener('click', (e) => {
-		    if (e.target === popup) {
-		      popup.remove();
-		    }
-		  });
-		
-		  document.body.appendChild(popup);
-		}
-
-        function showConfirmation(message, callbackSim, callbackNao) {
-		  showCustomPopup('confirmation', '❓', 'Confirmação', message, [
-		    { text: 'Sim', class: 'popup-btn popup-btn-confirmation', callback: callbackSim },
-		    { text: 'Não', class: 'popup-btn popup-btn-confirmation', callback: callbackNao }
-		  ]);
-		}      
-        
-        function showSuccess(message) {
-		  showCustomPopup('success', '✅', 'Sucesso', message, [
-		    { text: 'OK', class: 'popup-btn popup-btn-success', callback: null }
-		  ]);
-		}
-		
-        function showError(message) {
-		  showCustomPopup('error', '❌', 'Erro', message, [
-		    { text: 'OK', class: 'popup-btn popup-btn-error', callback: null }
-		  ]);
-		}
-           
-        // Testes
-		
-        document.getElementById('testar-sucesso').addEventListener('click', function() {
-		    showSuccess("Ação realizada com sucesso!");
-		});
-
-        document.getElementById('testar-confirmacao').addEventListener('click', function() {
-             showConfirmation("Vê  uma mensagem de Confirmação?");
-        });       
-        		
-        document.getElementById('testar-erro').addEventListener('click', function() {
-		    showError("Ocorreu um erro!");
-		});
     </script>
 </body>
 </html>
