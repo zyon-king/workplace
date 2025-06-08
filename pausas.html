@@ -368,55 +368,100 @@
         horaDuracaoSelect.value = '0';
         minutoDuracaoSelect.value = '30';
 
-        // Event listener para o botão
-        document.getElementById('adicionar-pausa').addEventListener('click', function() {
-            const horaInicio = horaInicioSelect.value;
-            const minutoInicio = minutoInicioSelect.value;
-            const horaDuracao = horaDuracaoSelect.value;
-            const minutoDuracao = minutoDuracaoSelect.value;
-            
-            alert(`Pausa adicionada!\nInício: ${horaInicio}:${minutoInicio}\nDuração: ${horaDuracao}h ${minutoDuracao}min`);
-        });
-        
-        function adicionarPausaNaLista(inicio, duracao) {
-            const listaPausas = document.getElementById('lista-pausas');
-            
-            // Remove mensagem de lista vazia se existir
-            const mensagemVazia = listaPausas.querySelector('.lista-pausas-vazia');
-            if (mensagemVazia) {
-                mensagemVazia.remove();
-            }
-            
-            // Cria ou encontra o container
-            let container = listaPausas.querySelector('.lista-pausas-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.className = 'lista-pausas-container';
-                listaPausas.appendChild(container);
-            }
-            
-            // Cria o item da pausa
-            const pausaItem = document.createElement('div');
-            pausaItem.className = 'pausa-item';
-            pausaItem.innerHTML = `
-                <div class="pausa-info">
-                    <div>
-                        <div class="pausa-horario">${inicio} - ${calcularFim(inicio, duracao)}</div>
-                        <div class="pausa-duracao">Duração: ${duracao}</div>
-                    </div>
-                    <div class="pausa-acoes">
-                        <button class="btn-pausa">Editar</button>
-                        <button class="btn-pausa btn-remover">Remover</button>
-                    </div>
-                </div>
-            `;
-            
-            container.appendChild(pausaItem);
-        }
-
+		// Event listener para o botão
+		document.getElementById('adicionar-pausa').addEventListener('click', function() {
+		    const horaInicio = horaInicioSelect.value;
+		    const minutoInicio = minutoInicioSelect.value;
+		    const horaDuracao = parseInt(horaDuracaoSelect.value);
+		    const minutoDuracao = parseInt(minutoDuracaoSelect.value);
+		
+		    const inicio = `${horaInicio}:${minutoInicio}`;
+		    const duracaoMinutos = horaDuracao * 60 + minutoDuracao;
+		    const duracaoTexto = calcularDuracao(horaDuracao, minutoDuracao);
+		
+		    adicionarPausaNaLista(inicio, duracaoMinutos, duracaoTexto);
+		});
+		
+		function calcularDuracao(horas, minutos) {
+		    if (horas === 0) {
+		        if (minutos === 1) {
+		            return `${minutos} minuto`;
+		        } else {
+		            return `${minutos} minutos`;
+		        }
+		    } else if (horas === 1) {
+		        if (minutos === 0) {
+		            return `${horas} hora`;
+		        } else if (minutos === 1) {
+		            return `${horas} hora e ${minutos} minuto`;
+		        } else {
+		            return `${horas} hora e ${minutos} minutos`;
+		        }
+		    } else {
+		        if (minutos === 0) {
+		            return `${horas} horas`;
+		        } else if (minutos === 1) {
+		            return `${horas} horas e ${minutos} minuto`;
+		        } else {
+		            return `${horas} horas e ${minutos} minutos`;
+		        }
+		    }
+		}
+		
+		function calcularFim(inicio, duracaoMinutos) {
+		    const [horaInicio, minutoInicio] = inicio.split(':').map(Number);
+		    let horaFim = horaInicio;
+		    let minutoFim = minutoInicio + duracaoMinutos;
+		
+		    horaFim += Math.floor(minutoFim / 60);
+		    minutoFim %= 60;
+		
+		    if (horaFim >= 24) {
+		        horaFim %= 24;
+		    }
+		
+		    return `${horaFim.toString().padStart(2, '0')}:${minutoFim.toString().padStart(2, '0')}`;
+		}
+		
+		function adicionarPausaNaLista(inicio, duracaoMinutos, duracaoTexto) {
+		    const listaPausas = document.getElementById('lista-pausas');
+		
+		    // Remove mensagem de lista vazia se existir
+		    const mensagemVazia = listaPausas.querySelector('.lista-pausas-vazia');
+		    if (mensagemVazia) {
+		        mensagemVazia.remove();
+		    }
+		
+		    // Cria ou encontra o container
+		    let container = listaPausas.querySelector('.lista-pausas-container');
+		    if (!container) {
+		        container = document.createElement('div');
+		        container.className = 'lista-pausas-container';
+		        listaPausas.appendChild(container);
+		    }
+		
+		    // Cria o item da pausa
+		    const pausaItem = document.createElement('div');
+		    pausaItem.className = 'pausa-item';
+		    pausaItem.innerHTML = `
+		        <div class="pausa-info">
+		            <div>
+		                <div class="pausa-horario">${inicio} - ${calcularFim(inicio, duracaoMinutos)}</div>
+		                <div class="pausa-duracao">Duração: ${duracaoTexto}</div>
+		            </div>
+		            <div class="pausa-acoes">
+		                <button class="btn-pausa">Editar</button>
+		                <button class="btn-pausa btn-remover">Remover</button>
+		            </div>
+		        </div>
+		    `;
+		
+		    container.appendChild(pausaItem);
+		}
     </script>
 </body>
 </html>
+
 
 
 
