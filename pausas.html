@@ -1,4 +1,428 @@
 <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Pausa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .time-inputs {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .time-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .time-group label {
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-weight: normal;
+            color: #666;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: white;
+            cursor: pointer;
+            min-width: 70px;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 5px;
+        }
+        
+        /* Estilo do botão */
+        .btn-adicionar {
+            background-color: #007bff;
+            color: white;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .btn-adicionar:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+        }
+
+        .btn-adicionar:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+        }
+
+        .btn-adicionar:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+        }
+
+        /* Container para centralizar o botão */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        /* Estilo da lista de pausas */
+        #lista-pausas {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .lista-pausas-titulo {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .lista-pausas-container {
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .lista-pausas-vazia {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px dashed #ddd;
+        }
+
+        /* Estilo para cada item de pausa */
+        .pausa-item {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .pausa-item:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+
+        .pausa-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .pausa-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .pausa-horario {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .pausa-duracao {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .pausa-acoes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-pausa {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-pausa:hover {
+            background-color: #f8f9fa;
+            border-color: #007bff;
+            color: #007bff;
+        }
+
+        .btn-pausa.btn-remover:hover {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 480px) {
+            .pausa-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .pausa-acoes {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Controle de Pausa</h2>
+        
+        <div class="form-group">
+            <div class="section-title">Início da pausa:</div>
+            <div class="time-inputs">
+                <div class="time-group">
+                    <label for="hora-inicio">Hora:</label>
+                    <select id="hora-inicio"></select>
+                </div>
+                <div class="time-group">
+                    <label for="minuto-inicio">Minuto:</label>
+                    <select id="minuto-inicio"></select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <div class="section-title">Duração da pausa:</div>
+            <div class="time-inputs">
+                <div class="time-group">
+                    <label for="hora-duracao">Horas:</label>
+                    <select id="hora-duracao"></select>
+                </div>
+                <div class="time-group">
+                    <label for="minuto-duracao">Minutos:</label>
+                    <select id="minuto-duracao"></select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button id="adicionar-pausa" class="btn-adicionar">Adicionar pausa</button>
+        </div>
+
+        <!-- Lista de pausas com conteúdo de exemplo -->
+        <div id="lista-pausas">
+            <div class="lista-pausas-titulo">Pausas Agendadas:</div>
+            
+            <div class="lista-pausas-container">
+                <div class="pausa-item">
+                    <div class="pausa-info">
+                        <div>
+                            <div class="pausa-horario">10:30 - 11:00</div>
+                            <div class="pausa-duracao">Duração: 30 minutos</div>
+                        </div>
+                        <div class="pausa-acoes">
+                            <button class="btn-pausa">Editar</button>
+                            <button class="btn-pausa btn-remover">Remover</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pausa-item">
+                    <div class="pausa-info">
+                        <div>
+                            <div class="pausa-horario">14:00 - 15:30</div>
+                            <div class="pausa-duracao">Duração: 1 hora e 30 minutos</div>
+                        </div>
+                        <div class="pausa-acoes">
+                            <button class="btn-pausa">Editar</button>
+                            <button class="btn-pausa btn-remover">Remover</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pausa-item">
+                    <div class="pausa-info">
+                        <div>
+                            <div class="pausa-horario">16:45 - 17:00</div>
+                            <div class="pausa-duracao">Duração: 15 minutos</div>
+                        </div>
+                        <div class="pausa-acoes">
+                            <button class="btn-pausa">Editar</button>
+                            <button class="btn-pausa btn-remover">Remover</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Preencher as opções de hora para início (0-23)
+        const horaInicioSelect = document.getElementById('hora-inicio');
+        for (let i = 0; i < 24; i++) {
+            const option = document.createElement('option');
+            option.value = i.toString().padStart(2, '0');
+            option.textContent = i.toString().padStart(2, '0');
+            horaInicioSelect.appendChild(option);
+        }
+
+        // Preencher as opções de minuto para início (0-59)
+        const minutoInicioSelect = document.getElementById('minuto-inicio');
+        for (let i = 0; i < 60; i++) {
+            const option = document.createElement('option');
+            option.value = i.toString().padStart(2, '0');
+            option.textContent = i.toString().padStart(2, '0');
+            minutoInicioSelect.appendChild(option);
+        }
+
+        // Preencher as opções de hora para duração (0-23)
+        const horaDuracaoSelect = document.getElementById('hora-duracao');
+        for (let i = 0; i <= 23; i++) {
+            const option = document.createElement('option');
+            option.value = i.toString();
+            option.textContent = i === 0 ? '0' : i === 1 ? '1 hora' : `${i} horas`;
+            horaDuracaoSelect.appendChild(option);
+        }
+
+        // Preencher as opções de minuto para duração (0-59)
+        const minutoDuracaoSelect = document.getElementById('minuto-duracao');
+        for (let i = 0; i < 60; i++) {
+            const option = document.createElement('option');
+            option.value = i.toString();
+            option.textContent = i === 0 ? '0' : i === 1 ? '1 minuto' : `${i} minutos`;
+            minutoDuracaoSelect.appendChild(option);
+        }
+
+        // Definir valores padrão para início da pausa (hora atual)
+        const agora = new Date();
+        horaInicioSelect.value = agora.getHours().toString().padStart(2, '0');
+        minutoInicioSelect.value = agora.getMinutes().toString().padStart(2, '0');
+
+        // Definir valores padrão para duração da pausa (30 minutos)
+        horaDuracaoSelect.value = '0';
+        minutoDuracaoSelect.value = '30';
+
+        // Event listener para o botão
+        document.getElementById('adicionar-pausa').addEventListener('click', function() {
+            const horaInicio = horaInicioSelect.value;
+            const minutoInicio = minutoInicioSelect.value;
+            const horaDuracao = horaDuracaoSelect.value;
+            const minutoDuracao = minutoDuracaoSelect.value;
+            
+            alert(`Pausa adicionada!\nInício: ${horaInicio}:${minutoInicio}\nDuração: ${horaDuracao}h ${minutoDuracao}min`);
+        });
+        
+        function adicionarPausaNaLista(inicio, duracao) {
+            const listaPausas = document.getElementById('lista-pausas');
+            
+            // Remove mensagem de lista vazia se existir
+            const mensagemVazia = listaPausas.querySelector('.lista-pausas-vazia');
+            if (mensagemVazia) {
+                mensagemVazia.remove();
+            }
+            
+            // Cria ou encontra o container
+            let container = listaPausas.querySelector('.lista-pausas-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'lista-pausas-container';
+                listaPausas.appendChild(container);
+            }
+            
+            // Cria o item da pausa
+            const pausaItem = document.createElement('div');
+            pausaItem.className = 'pausa-item';
+            pausaItem.innerHTML = `
+                <div class="pausa-info">
+                    <div>
+                        <div class="pausa-horario">${inicio} - ${calcularFim(inicio, duracao)}</div>
+                        <div class="pausa-duracao">Duração: ${duracao}</div>
+                    </div>
+                    <div class="pausa-acoes">
+                        <button class="btn-pausa">Editar</button>
+                        <button class="btn-pausa btn-remover">Remover</button>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(pausaItem);
+        }
+
+    </script>
+</body>
+</html>
+
+
+
+/******/
+
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
