@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Controle de Pausa</title>
+    
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/zyon-king/granular@main/style.css">
+    
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -284,7 +288,12 @@
 </head>
 <body>
     <div id="testes">
-        <button id="teste-notificacao">Testar Notificação</button>
+          <button id="teste-notificacao">Testar Notificação</button>
+          <button id="testar-sucesso">Testar Sucesso</button>
+          <button id="testar-confirmacao">Testar Confirmação</button>
+          <button id="testar-erro">Testar Erro</button>
+	</div>
+
     </div>
     
     <hr>
@@ -355,27 +364,35 @@
         </div>
     </div>
     
-    <script src="https://cdn.statically.io/gh/zyon-king/granular/main/notificacoes.js"></script>
-    
+	<script src="https://cdn.statically.io/gh/zyon-king/granular/main/notificacoes.js"></script>
+
+	<script src=https://cdn.jsdelivr.net/gh/zyon-king/granular@main/mensagens.js></script>
     
     <script>
         // incio do bloco teste de notificacao
-        document.getElementById('teste-notificacao').addEventListener('click', askForNotificationPermission);
         
-        document.addEventListener('DOMContentLoaded', function() {
-            const botaoTeste = document.getElementById('teste-notificacao');
-            if (botaoTeste) {
-                botaoTeste.addEventListener('click', function() {
-                    if (isPermissionGranted()) {
-                        new Notification('Notificação de teste', {
-                            body: 'Essa é uma notificação de teste!',
-                        });
-                    } else {
-                        showError("Permissão para notificações não foi concedida.");
-                    }
+        // Solicitar permissão para notificações quando a página for carregada
+        window.addEventListener('load', () => {
+            askForNotificationPermission();
+        });
+
+        // Função para mostrar notificações
+        function showNotification(title, message) {
+            if (isPermissionGranted()) {
+                new Notification(title, {
+                    body: message,
+                    // icon: 'icone.png' // opcional
                 });
+            } else {
+                showError("Permissão para notificações não foi concedida.");
             }
-        }); 
+        }
+
+        // Exemplo de uso
+        setTimeout(() => {
+            showNotification('Notificação de teste', 'Essa é uma notificação de teste!');
+        }, 5000);
+        
         // fim do bloco teste de notificacao
         
         function notificar(titulo, mensagem) {
