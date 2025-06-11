@@ -27,8 +27,8 @@
             overflow: hidden;
             border: 1px solid #ccc;
             border-radius: 5px;
-            display: inline-block;
-            vertical-align: top;
+            display: flex; /* Use flexbox to align items and buttons */
+            align-items: center;
             background-color: #fff;
         }
 
@@ -36,12 +36,16 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            width: calc(100% - 28px); 
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start; 
             justify-content: flex-start;
             transition: transform 0.2s ease-out;
+            padding-left: 22px; 
+            box-sizing: border-box; 
+            cursor: pointer; 
+            z-index: 5; 
         }
 
         .carousel .item {
@@ -50,32 +54,55 @@
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            padding-left: 22px;
-            transform: translateX(-5px);
             font-size: 24px;
             box-sizing: border-box;
+            transform: translateX(-5px); /* Align with previous padding */
         }
 
-        .fill-handle {
+        .carousel-buttons {
             position: absolute;
-            bottom: 1px;
-            right: -2px;
-            width: 28px;
-            height: 50px;
-            cursor: pointer;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 28px; /* Width of the button area */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 1px solid #eee; /* Visual separator */
+            background-color: #f8f8f8; /* Slightly different background for buttons */
+            border-radius: 0 5px 5px 0;
             z-index: 10;
+        }
+
+        .carousel-button {
+            width: 100%;
+            height: 50%; /* Each button takes half the height */
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-            /* New styles for the character */
-            font-size: 20px; /* Adjust as needed for size */
-            color: #555; /* Adjust color as needed */
-            background-color: #f0f0f0; /* Match body background or carousel background */
-            border-radius: 0 5px 5px 0; /* Match carousel border-radius */
-            box-shadow: -2px 0 5px rgba(0,0,0,0.1); /* Optional shadow */
+            cursor: pointer;
+            font-size: 16px; /* Size of the arrow character */
+            color: #555;
+            user-select: none; /* Prevent text selection */
+            transition: background-color 0.1s ease-out, color 0.1s ease-out;
+        }
+
+        .carousel-button:hover {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+
+        .carousel-button:active {
+            background-color: #d0d0d0;
+            color: #000;
         }
         
+        /* Specific styles for the top and bottom buttons */
+        .carousel-button.up {
+            border-bottom: 1px solid #eee; /* Separator between up and down buttons */
+        }
+
         /* --- Overlay for the new selection carousel --- */
         .selection-overlay {
             position: fixed;
@@ -133,7 +160,7 @@
             box-sizing: border-box;
             cursor: pointer;
             color: #555; /* Default color for numbers in the list */
-            transition: color 0.2s ease-out, transform 0.2s ease-out, font-size 0.2s ease-out; /* Added transform and font-size to transition */
+            transition: color 0.2s ease-out, transform 0.2s ease-out, font-size 0.2s ease-out;
         }
 
         /* Hover effect for the selection carousel items */
@@ -165,14 +192,20 @@
 <div class="carousel-container">
     <div class="carousel" id="hours-carousel">
         <div class="items" id="hours-items"></div>
-        <div class="fill-handle" id="hours-fill-handle">﹀</div>
+        <div class="carousel-buttons">
+            <div class="carousel-button up" data-direction="up">︿</div>
+            <div class="carousel-button down" data-direction="down">﹀</div>
+        </div>
     </div>
 </div>
 
 <div class="carousel-container">
     <div class="carousel" id="minutes-carousel">
         <div class="items" id="minutes-items"></div>
-        <div class="fill-handle" id="minutes-fill-handle">﹀</div>
+        <div class="carousel-buttons">
+            <div class="carousel-button up" data-direction="up">︿</div>
+            <div class="carousel-button down" data-direction="down">﹀</div>
+        </div>
     </div>
 </div>
 
@@ -192,11 +225,13 @@
     // Main input carousels
     const hoursCarousel = document.getElementById('hours-carousel');
     const hoursItems = document.getElementById('hours-items');
-    const hoursFillHandle = document.getElementById('hours-fill-handle');
+    const hoursUpButton = hoursCarousel.querySelector('.carousel-button.up');
+    const hoursDownButton = hoursCarousel.querySelector('.carousel-button.down');
 
     const minutesCarousel = document.getElementById('minutes-carousel');
     const minutesItems = document.getElementById('minutes-items');
-    const minutesFillHandle = document.getElementById('minutes-fill-handle');
+    const minutesUpButton = minutesCarousel.querySelector('.carousel-button.up');
+    const minutesDownButton = minutesCarousel.querySelector('.carousel-button.down');
 
     let currentHour = 0;
     let currentMinute = 0;
@@ -214,6 +249,7 @@
 
     // --- Main Input Carousel Population ---
     function populateMainCarousel(itemsContainer, totalItems) {
+        itemsContainer.innerHTML = ''; // Clear existing items
         for (let i = 0; i < totalItems; i++) {
             const value = i.toString().padStart(2, '0');
             const item = document.createElement('div');
@@ -237,7 +273,9 @@
 
     // --- Main Input Carousel Scroll Logic ---
     function setupMainCarouselScroll(carouselElement, itemsElement, currentValRef, totalItems) {
-        carouselElement.addEventListener('wheel', (event) => {
+        // We're attaching the wheel listener to the .items div now
+        // so clicking on it can open the overlay
+        itemsElement.addEventListener('wheel', (event) => {
             event.preventDefault();
             if (event.deltaY > 0) { // Scroll down
                 currentValRef.value = (currentValRef.value + 1) % totalItems;
@@ -245,6 +283,12 @@
                 currentValRef.value = (currentValRef.value - 1 + totalItems) % totalItems;
             }
             updateMainCarouselPosition(itemsElement, currentValRef.value);
+            // Update global variables after scroll
+            if (carouselElement.id === 'hours-carousel') {
+                currentHour = currentValRef.value;
+            } else {
+                currentMinute = currentValRef.value;
+            }
         });
     }
 
@@ -254,9 +298,33 @@
     setupMainCarouselScroll(hoursCarousel, hoursItems, hourRef, 24);
     setupMainCarouselScroll(minutesCarousel, minutesItems, minuteRef, 60);
 
-    // Update global variables after scroll
-    hoursCarousel.addEventListener('wheel', () => { currentHour = hourRef.value; });
-    minutesCarousel.addEventListener('wheel', () => { currentMinute = minuteRef.value; });
+    // --- Button Click Logic for Main Carousels ---
+    function setupCarouselButtons(upButton, downButton, itemsElement, currentValRef, totalItems, carouselId) {
+        upButton.addEventListener('click', () => {
+            currentValRef.value = (currentValRef.value - 1 + totalItems) % totalItems;
+            updateMainCarouselPosition(itemsElement, currentValRef.value);
+            // Update global variables
+            if (carouselId === 'hours-carousel') {
+                currentHour = currentValRef.value;
+            } else {
+                currentMinute = currentValRef.value;
+            }
+        });
+
+        downButton.addEventListener('click', () => {
+            currentValRef.value = (currentValRef.value + 1) % totalItems;
+            updateMainCarouselPosition(itemsElement, currentValRef.value);
+            // Update global variables
+            if (carouselId === 'hours-carousel') {
+                currentHour = currentValRef.value;
+            } else {
+                currentMinute = currentValRef.value;
+            }
+        });
+    }
+
+    setupCarouselButtons(hoursUpButton, hoursDownButton, hoursItems, hourRef, 24, 'hours-carousel');
+    setupCarouselButtons(minutesUpButton, minutesDownButton, minutesItems, minuteRef, 60, 'minutes-carousel');
 
 
     // --- New: Selection Carousel Logic ---
@@ -299,9 +367,9 @@
         // (This is implicitly handled by the fixed selector line)
     }
 
-    function setupSelectionCarouselInteraction(carouselElement, selectionOverlay, selectionItemsContainer, currentValRef, totalItems) {
-        // Open the selection overlay when the main carousel is clicked
-        carouselElement.addEventListener('click', (event) => {
+    function setupSelectionCarouselInteraction(mainItemsElement, selectionOverlay, selectionItemsContainer, currentValRef, totalItems) {
+        // Open the selection overlay when the main carousel's *items area* is clicked
+        mainItemsElement.addEventListener('click', (event) => {
             populateSelectionCarousel(selectionItemsContainer, totalItems, selectionOverlay, currentValRef); // Re-populate to ensure fresh state
             updateSelectionCarouselPosition(selectionItemsContainer, currentValRef.value, totalItems);
             selectionOverlay.classList.add('active');
@@ -336,14 +404,16 @@
                 updateMainCarouselPosition(hoursItems, currentHour);
             } else {
                 currentMinute = newIndex;
+                currentMinute = newIndex;
                 updateMainCarouselPosition(minutesItems, currentMinute);
             }
         });
     }
 
     // Setup interactions for both hours and minutes
-    setupSelectionCarouselInteraction(hoursCarousel, hoursSelectionOverlay, hoursSelectionItems, hourRef, 24);
-    setupSelectionCarouselInteraction(minutesCarousel, minutesSelectionOverlay, minutesSelectionItems, minuteRef, 60);
+    // Pass the main carousel's *items* div for the click listener
+    setupSelectionCarouselInteraction(hoursItems, hoursSelectionOverlay, hoursSelectionItems, hourRef, 24);
+    setupSelectionCarouselInteraction(minutesItems, minutesSelectionOverlay, minutesSelectionItems, minuteRef, 60);
 
     // Initial population for the selection carousels (needed when they first open)
     populateSelectionCarousel(hoursSelectionItems, 24, hoursSelectionOverlay, hourRef);
