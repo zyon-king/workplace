@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hora e Minuto</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            flex-wrap: wrap;
+        }
+
+        .carousel-container {
+            position: relative;
+            margin: 10px;
+        }
+
+        .carousel {
+            position: relative;
+            width: 80px;
+            height: 50px;
+            overflow: hidden;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: inline-block;
+            vertical-align: top;
+            background-color: #fff;
+        }
+
+        .carousel .item {
+            min-width: 100%;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Keep this to start from the left */
+            /* Remove padding-left entirely or set to 0 */
+            padding-left: 22px; 
+        
+            /* --- ADD OR ADJUST THIS --- */
+            transform: translateX(-5px); /* Move the item 5 pixels to the left */
+            /* Adjust -5px to whatever negative value makes it go as far left as you need */
+        
+            font-size: 24px;
+            box-sizing: border-box;
+        }
+
+        .fill-handle {
+            position: absolute;
+            bottom: 1px; /* Roughly centers it vertically within the 50px item */
+            right: -2px; /* Pulls it slightly outside the carousel's right border */
+            width: 28px; /* Wider */
+            height: 50px; /* Maintain original height or make slightly taller if desired */
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .fill-handle svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            /* transform: none; /* Remove previous translateX to let flexbox center it */
+        }
+
+        /* Grid Container Styles */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s;
+        }
+
+        .grid-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .selection-grid {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: grid;
+            gap: 5px;
+        }
+
+        .grid-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .grid-item:hover {
+            background-color: #e9e9e9;
+        }
+
+        .grid-item.selected {
+            background-color: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="carousel-container">
+    <div class="carousel" id="hours-carousel">
+        <div class="items" id="hours-items"></div>
+        <div class="fill-handle" id="hours-fill-handle">
+            <svg width="16" height="28" viewBox="0 0 16 28">
+                <rect x="2" y="2" width="12" height="24" rx="2" fill="#ccc" stroke="#fff" stroke-width="1"/>
+                <line x1="6" y1="6" x2="10" y2="6" stroke="#fff" stroke-width="1"/>
+                <line x1="5" y1="10" x2="11" y2="10" stroke="#fff" stroke-width="1"/>
+                <line x1="4" y1="14" x2="12" y2="14" stroke="#fff" stroke-width="1"/>
+                <line x1="5" y1="18" x2="11" y2="18" stroke="#fff" stroke-width="1"/>
+                <line x1="6" y1="22" x2="10" y2="22" stroke="#fff" stroke-width="1"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<div class="carousel-container">
+    <div class="carousel" id="minutes-carousel">
+        <div class="items" id="minutes-items"></div>
+        <div class="fill-handle" id="minutes-fill-handle">
+            <svg width="16" height="28" viewBox="0 0 16 28">
+                <rect x="2" y="2" width="12" height="24" rx="2" fill="#ccc" stroke="#fff" stroke-width="1"/>
+                <line x1="6" y1="6" x2="10" y2="6" stroke="#fff" stroke-width="1"/>
+                <line x1="5" y1="10" x2="11" y2="10" stroke="#fff" stroke-width="1"/>
+                <line x1="4" y1="14" x2="12" y2="14" stroke="#fff" stroke-width="1"/>
+                <line x1="5" y1="18" x2="11" y2="18" stroke="#fff" stroke-width="1"/>
+                <line x1="6" y1="22" x2="10" y2="22" stroke="#fff" stroke-width="1"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<div class="grid-overlay" id="hours-grid-overlay">
+    <div class="selection-grid" id="hours-selection-grid"></div>
+</div>
+
+<div class="grid-overlay" id="minutes-grid-overlay">
+    <div class="selection-grid" id="minutes-selection-grid"></div>
+</div>
+
+<script>
+    const hoursCarousel = document.getElementById('hours-carousel');
+    const hoursItems = document.getElementById('hours-items');
+    const hoursFillHandle = document.getElementById('hours-fill-handle');
+    const hoursGridOverlay = document.getElementById('hours-grid-overlay');
+    const hoursSelectionGrid = document.getElementById('hours-selection-grid');
+
+    const minutesCarousel = document.getElementById('minutes-carousel');
+    const minutesItems = document.getElementById('minutes-items');
+    const minutesFillHandle = document.getElementById('minutes-fill-handle');
+    const minutesGridOverlay = document.getElementById('minutes-grid-overlay');
+    const minutesSelectionGrid = document.getElementById('minutes-selection-grid');
+
+    let currentHour = 0;
+    let currentMinute = 0;
+    const itemHeight = 50; // Height of each item in pixels
+
+    // --- Carousel Population ---
+    function populateCarousel(itemsContainer, totalItems) {
+        for (let i = 0; i < totalItems; i++) {
+            const value = i.toString().padStart(2, '0');
+            const item = document.createElement('div');
+            item.classList.add('item');
+            item.textContent = value;
+            itemsContainer.appendChild(item);
+        }
+    }
+
+    populateCarousel(hoursItems, 24);
+    populateCarousel(minutesItems, 60);
+
+    // --- Carousel Position Update ---
+    function updateCarouselPosition(carouselItems, currentIndex) {
+        carouselItems.style.transform = `translateY(-${currentIndex * itemHeight}px)`;
+    }
+
+    // Initialize positions
+    updateCarouselPosition(hoursItems, currentHour);
+    updateCarouselPosition(minutesItems, currentMinute);
+
+    // --- Carousel Scroll Logic ---
+    function setupCarouselScroll(carouselElement, itemsElement, currentValRef, totalItems) {
+        carouselElement.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            if (event.deltaY > 0) { // Scroll down
+                currentValRef.value = (currentValRef.value + 1) % totalItems;
+            } else { // Scroll up
+                currentValRef.value = (currentValRef.value - 1 + totalItems) % totalItems;
+            }
+            updateCarouselPosition(itemsElement, currentValRef.value);
+        });
+    }
+
+    // Using objects to pass currentHour and currentMinute by reference
+    const hourRef = { value: currentHour };
+    const minuteRef = { value: currentMinute };
+
+    setupCarouselScroll(hoursCarousel, hoursItems, hourRef, 24);
+    setupCarouselScroll(minutesCarousel, minutesItems, minuteRef, 60);
+
+    // Update global variables after scroll
+    hoursCarousel.addEventListener('wheel', () => { currentHour = hourRef.value; });
+    minutesCarousel.addEventListener('wheel', () => { currentMinute = minuteRef.value; });
+
+
+    // --- Grid Population and Interaction ---
+    function createGrid(gridContainer, totalItems, cols, initialValue) {
+        gridContainer.innerHTML = ''; // Clear previous content
+        gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+        for (let i = 0; i < totalItems; i++) {
+            const gridItem = document.createElement('div');
+            gridItem.classList.add('grid-item');
+            const displayValue = i.toString().padStart(2, '0');
+            gridItem.textContent = displayValue;
+            gridItem.dataset.value = i; // Store the numerical value
+
+            if (i === initialValue) {
+                gridItem.classList.add('selected');
+            }
+
+            gridItem.addEventListener('click', () => {
+                // Remove 'selected' from all items
+                Array.from(gridContainer.children).forEach(item => {
+                    item.classList.remove('selected');
+                });
+                // Add 'selected' to the clicked item
+                gridItem.classList.add('selected');
+
+                // Return the selected value
+                if (gridContainer === hoursSelectionGrid) {
+                    currentHour = parseInt(gridItem.dataset.value);
+                    hourRef.value = currentHour; // Update reference for carousel
+                    updateCarouselPosition(hoursItems, currentHour);
+                    hoursGridOverlay.classList.remove('active');
+                } else if (gridContainer === minutesSelectionGrid) {
+                    currentMinute = parseInt(gridItem.dataset.value);
+                    minuteRef.value = currentMinute; // Update reference for carousel
+                    updateCarouselPosition(minutesItems, currentMinute);
+                    minutesGridOverlay.classList.remove('active');
+                }
+            });
+            gridContainer.appendChild(gridItem);
+        }
+    }
+
+    // --- Fill Handle and Double Click Logic ---
+    function setupFillHandle(handleElement, carouselElement, gridOverlayElement, selectionGridElement, totalItems, cols, currentValRef) {
+    const showGrid = (event) => {
+        // Remove 'selected' from previous selections
+        Array.from(selectionGridElement.children).forEach(item => {
+            item.classList.remove('selected');
+        });
+        // Add 'selected' to the current value
+        const selectedItem = selectionGridElement.querySelector(`[data-value="${currentValRef.value}"]`);
+        if (selectedItem) {
+            selectedItem.classList.add('selected');
+        }
+
+        gridOverlayElement.classList.add('active');
+        if (event) {
+            event.stopPropagation(); // Prevent event from bubbling up and causing issues
+        }
+    };
+
+    // Activate grid with a single click on the carousel element (the numbers area)
+    carouselElement.addEventListener('click', showGrid);
+
+    // REMOVED: No longer listening for clicks on the fill handle specifically,
+    // as any click on the carousel will now open the grid.
+    // handleElement.addEventListener('click', showGrid);
+
+
+    // Close grid when clicking outside
+    gridOverlayElement.addEventListener('click', (event) => {
+        if (event.target === gridOverlayElement) { // Only if clicking the overlay itself
+            gridOverlayElement.classList.remove('active');
+        }
+    });
+}
+
+    // Setup for Hours
+    createGrid(hoursSelectionGrid, 24, 4, currentHour);
+    setupFillHandle(hoursFillHandle, hoursCarousel, hoursGridOverlay, hoursSelectionGrid, 24, 4, hourRef);
+
+    // Setup for Minutes
+    createGrid(minutesSelectionGrid, 60, 7, currentMinute);
+    setupFillHandle(minutesFillHandle, minutesCarousel, minutesGridOverlay, minutesSelectionGrid, 60, 7, minuteRef);
+
+</script>
+
+</body>
+</html>
