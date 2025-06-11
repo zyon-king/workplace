@@ -68,14 +68,14 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            /* New styles for the character */
+            font-size: 20px; /* Adjust as needed for size */
+            color: #555; /* Adjust color as needed */
+            background-color: #f0f0f0; /* Match body background or carousel background */
+            border-radius: 0 5px 5px 0; /* Match carousel border-radius */
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1); /* Optional shadow */
         }
         
-        .fill-handle svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-
         /* --- Overlay for the new selection carousel --- */
         .selection-overlay {
             position: fixed;
@@ -133,7 +133,14 @@
             box-sizing: border-box;
             cursor: pointer;
             color: #555; /* Default color for numbers in the list */
-            transition: color 0.2s ease-out;
+            transition: color 0.2s ease-out, transform 0.2s ease-out, font-size 0.2s ease-out; /* Added transform and font-size to transition */
+        }
+
+        /* Hover effect for the selection carousel items */
+        .selection-carousel .item:hover {
+            font-size: 28px; /* Slightly larger font size on hover */
+            transform: scale(1.1); /* Slightly enlarge the item */
+            color: #007bff; /* Optional: Change color on hover for better feedback */
         }
 
         /* --- Fixed selector line in the middle of the selection carousel --- */
@@ -158,32 +165,14 @@
 <div class="carousel-container">
     <div class="carousel" id="hours-carousel">
         <div class="items" id="hours-items"></div>
-        <div class="fill-handle" id="hours-fill-handle">
-            <svg width="16" height="28" viewBox="0 0 16 28">
-                <rect x="2" y="2" width="12" height="24" rx="2" fill="#ccc" stroke="#fff" stroke-width="1"/>
-                <line x1="6" y1="6" x2="10" y2="6" stroke="#fff" stroke-width="1"/>
-                <line x1="5" y1="10" x2="11" y2="10" stroke="#fff" stroke-width="1"/>
-                <line x1="4" y1="14" x2="12" y2="14" stroke="#fff" stroke-width="1"/>
-                <line x1="5" y1="18" x2="11" y2="18" stroke="#fff" stroke-width="1"/>
-                <line x1="6" y1="22" x2="10" y2="22" stroke="#fff" stroke-width="1"/>
-            </svg>
-        </div>
+        <div class="fill-handle" id="hours-fill-handle">﹀</div>
     </div>
 </div>
 
 <div class="carousel-container">
     <div class="carousel" id="minutes-carousel">
         <div class="items" id="minutes-items"></div>
-        <div class="fill-handle" id="minutes-fill-handle">
-            <svg width="16" height="28" viewBox="0 0 16 28">
-                <rect x="2" y="2" width="12" height="24" rx="2" fill="#ccc" stroke="#fff" stroke-width="1"/>
-                <line x1="6" y1="6" x2="10" y2="6" stroke="#fff" stroke-width="1"/>
-                <line x1="5" y1="10" x2="11" y2="10" stroke="#fff" stroke-width="1"/>
-                <line x1="4" y1="14" x2="12" y2="14" stroke="#fff" stroke-width="1"/>
-                <line x1="5" y1="18" x2="11" y2="18" stroke="#fff" stroke-width="1"/>
-                <line x1="6" y1="22" x2="10" y2="22" stroke="#fff" stroke-width="1"/>
-            </svg>
-        </div>
+        <div class="fill-handle" id="minutes-fill-handle">﹀</div>
     </div>
 </div>
 
