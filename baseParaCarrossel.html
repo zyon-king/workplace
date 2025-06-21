@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+<style>
+/* --- CSS do Carrossel (original) --- */
+.carousel-container {
+    position: relative;
+    margin: 10px;
+}
+.carousel {
+    position: relative;
+    width: 80px;
+    height: 50px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+}
+.carousel .items {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% - 28px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    transition: transform 0.2s ease-out;
+    padding-left: 22px;
+    box-sizing: border-box;
+    cursor: pointer;
+    z-index: 5;
+}
+.carousel .item {
+    min-width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 24px;
+    box-sizing: border-box;
+    transform: translateX(-5px);
+}
+.carousel-buttons {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 1px solid #eee;
+    background-color: #f8f8f8;
+    border-radius: 0 5px 5px 0;
+    z-index: 10;
+}
+.carousel-button {
+    width: 100%;
+    height: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: #555;
+    user-select: none;
+    transition: background-color 0.1s ease-out, color 0.1s ease-out;
+}
+.carousel-button:hover {
+    background-color: #e0e0e0;
+    color: #333;
+}
+.carousel-button:active {
+    background-color: #d0d0d0;
+    color: #000;
+}
+.carousel-button.up {
+    border-bottom: 1px solid #eee;
+}
+
+/* --- Overlay para o novo carrossel de seleção --- */
+.selection-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s;
+}
+.selection-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+/* --- Estilos para o novo carrossel de seleção dentro do overlay --- */
+.selection-carousel {
+    position: relative;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 100px;
+    height: 90vh; /* Para mostrar 5 itens (5 * 50px) */
+    max-height: 90vh; /* Margem das bordas da tela */
+    overflow: hidden; /* Esconde números fora da visão de 5 itens */
+}
+.selection-carousel .items {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    transition: transform 0.2s ease-out;
+    padding-top: 100px; /* Preenchimento para permitir transformações negativas para posicionamento inicial */
+    padding-bottom: 100px; /* Preenchimento para permitir rolagem além do final */
+}
+.selection-carousel .item {
+    min-width: 100%;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centraliza números na lista de seleção */
+    font-size: 24px;
+    box-sizing: border-box;
+    cursor: pointer;
+    color: #555; /* Cor padrão para números na lista */
+    transition: color 0.1s ease-out, transform 0.1s ease-out, font-size 0.1s ease-out;
+}
+/* Efeito hover para os itens do carrossel de seleção */
+.selection-carousel .item:hover {
+    font-size: 28px; /* Tamanho da fonte ligeiramente maior no hover */
+    transform: scale(1.1); /* Amplia ligeiramente o item */
+    color: #007bff; /* Opcional: Altera a cor no hover para melhor feedback */
+}
+</style>
+</head>
+<body>
+
+    <div class="carousel-container">
+        <div class="carousel" id="hours-carousel">
+            <div class="items" id="hours-items"></div>
+            <div class="carousel-buttons">
+                <div class="carousel-button up" data-direction="up">︿</div>
+                <div class="carousel-button down" data-direction="down">﹀</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="carousel-container">
+        <div class="carousel" id="minutes-carousel">
+            <div class="items" id="minutes-items"></div>
+            <div class="carousel-buttons">
+                <div class="carousel-button up" data-direction="up">︿</div>
+                <div class="carousel-button down" data-direction="down">﹀</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="selection-overlay" id="hours-selection-overlay">
+        <div class="selection-carousel">
+            <div class="items" id="hours-selection-items"></div>
+        </div>
+    </div>
+
+    <div class="selection-overlay" id="minutes-selection-overlay">
+        <div class="selection-carousel">
+            <div class="items" id="minutes-selection-items"></div>
+        </div>
+    </div>
+
+    <script>
+const itemHeight = 50; // Height of each item in pixels
+const NUM_REPEATS = 3; // Number of times to repeat the full sequence in selection overlay
+
+// --- TimeCarousel Class ---
+// This class encapsulates the logic for a single hour OR minute carousel
+class TimeCarousel {
+    constructor(carouselId, itemsId, selectionOverlayId, selectionItemsId, minValue, maxValue, initialValue = 0) {
+        this.carouselElem = document.getElementById(carouselId);
+        this.itemsElem = document.getElementById(itemsId);
+        this.selectionOverlayElem = document.getElementById(selectionOverlayId);
+        this.selectionItemsElem = document.getElementById(selectionItemsId);
+        this.minValue = minValue;
+        this.maxValue = maxValue;
+        this.totalItems = maxValue - minValue + 1;
+        this.currentValue = initialValue;
+
+        // Bind 'this' to methods that will be used as event listeners
+        this.handleWheelScroll = this.handleWheelScroll.bind(this);
+        this.handleButtonClick = this.handleButtonClick.bind(this);
+        this.handleMainCarouselClick = this.handleMainCarouselClick.bind(this);
+        this.handleOverlayClick = this.handleOverlayClick.bind(this);
+        this.handleSelectionItemClick = this.handleSelectionItemClick.bind(this);
+        this.handleSelectionWheelScroll = this.handleSelectionWheelScroll.bind(this);
+
+        this.init();
+    }
+
+    init() {
+        this.populateMainCarousel();
+        this.updateMainCarouselPosition();
+        this.setupMainCarouselEvents();
+        this.setupSelectionOverlayEvents();
+    }
+
+    // Populates the smaller display carousel (e.g., in the main alarm section)
+    populateMainCarousel() {
+        this.itemsElem.innerHTML = '';
+        for (let i = this.minValue; i <= this.maxValue; i++) {
+            const value = String(i).padStart(2, '0');
+            const item = document.createElement('div');
+            item.classList.add('item');
+            item.textContent = value;
+            this.itemsElem.appendChild(item);
+        }
+    }
+
+    // Updates the visual position of the smaller display carousel
+    updateMainCarouselPosition() {
+        const index = this.currentValue - this.minValue;
+        this.itemsElem.style.transform = `translateY(-${index * itemHeight}px)`;
+    }
+
+    // Handles mouse wheel scrolling on the main carousel
+    handleWheelScroll(event) {
+        event.preventDefault();
+        if (event.deltaY > 0) { // Scroll down
+            this.currentValue = (this.currentValue + 1);
+        } else { // Scroll up
+            this.currentValue = (this.currentValue - 1);
+        }
+        // Wrap around logic
+        if (this.currentValue > this.maxValue) this.currentValue = this.minValue;
+        if (this.currentValue < this.minValue) this.currentValue = this.maxValue;
+
+        this.updateMainCarouselPosition();
+    }
+
+    // Handles button clicks (up/down arrows) on the main carousel
+    handleButtonClick(event) {
+        const direction = event.target.dataset.direction;
+        if (direction === 'up') {
+            this.currentValue = (this.currentValue - 1);
+        } else { // 'down'
+            this.currentValue = (this.currentValue + 1);
+        }
+        // Wrap around logic
+        if (this.currentValue > this.maxValue) this.currentValue = this.minValue;
+        if (this.currentValue < this.minValue) this.currentValue = this.maxValue;
+
+        this.updateMainCarouselPosition();
+    }
+
+    // Sets up event listeners for the main carousel (wheel and buttons)
+    setupMainCarouselEvents() {
+        this.carouselElem.addEventListener('wheel', this.handleWheelScroll);
+        const buttons = this.carouselElem.querySelectorAll('.carousel-button');
+        buttons.forEach(button => {
+            button.addEventListener('click', this.handleButtonClick);
+        });
+        this.itemsElem.addEventListener('click', this.handleMainCarouselClick);
+    }
+
+    // Populates the large selection overlay carousel
+    populateSelectionCarouselItems() {
+        this.selectionItemsElem.innerHTML = '';
+        for (let r = 0; r < NUM_REPEATS; r++) {
+            for (let i = this.minValue; i <= this.maxValue; i++) {
+                const value = String(i).padStart(2, '0');
+                const item = document.createElement('div');
+                item.classList.add('item');
+                item.textContent = value;
+                item.dataset.value = i; // Store actual value
+                this.selectionItemsElem.appendChild(item);
+            }
+        }
+    }
+
+    // Updates the visual position of the selection overlay carousel
+    updateSelectionCarouselPosition(targetValue, isScrolling = false) {
+        const totalItemsInRepetition = this.totalItems;
+        const middleBlockStartOffset = Math.floor(NUM_REPEATS / 2) * totalItemsInRepetition;
+        const bufferItems = Math.floor(this.selectionCarouselElem.clientHeight / 2 / itemHeight); // Approx items to center
+
+        let targetFullIndex = middleBlockStartOffset + (targetValue - this.minValue);
+        let targetTransformY = -(targetFullIndex * itemHeight) + (bufferItems * itemHeight);
+
+        this.selectionItemsElem.style.transform = `translateY(${targetTransformY}px)`;
+
+        // Snap back logic for infinite scroll effect in overlay
+        // This is more complex and usually involves checking position after transition
+        // For now, let's focus on the initial smooth scroll and basic wheel
+    }
+
+
+    // Handles click on the main carousel, opening the selection overlay
+    handleMainCarouselClick() {
+        // First, populate the overlay with the correct range of numbers
+        this.populateSelectionCarouselItems();
+
+        // Store a reference to WHICH carousel (this instance) opened the overlay
+        // So the overlay's item clicks know which current value to update
+        this.selectionOverlayElem.currentActiveCarousel = this;
+
+        // Set the selection carousel's initial scroll position
+        // This needs a small delay or rAF to ensure the DOM is ready after populate
+        requestAnimationFrame(() => {
+             // The selection-carousel element itself, within the overlay
+            this.selectionCarouselElem = this.selectionOverlayElem.querySelector('.selection-carousel');
+            // Ensure the transition is active for smooth initial jump
+            this.selectionItemsElem.style.transition = `transform 0.2s ease-out`;
+            this.updateSelectionCarouselPosition(this.currentValue, false);
+        });
+
+        this.selectionOverlayElem.classList.add('active'); // Show the overlay
+    }
+
+    // Handles click on an item in the selection overlay
+    handleSelectionItemClick(event) {
+        // Ensure this is an item click, not the background
+        if (event.target.classList.contains('item')) {
+            const selectedValue = parseInt(event.target.dataset.value);
+            // Get the carousel instance that opened this overlay
+            const activeCarousel = this.selectionOverlayElem.currentActiveCarousel;
+            if (activeCarousel) {
+                activeCarousel.setValue(selectedValue); // Update its value
+                activeCarousel.updateMainCarouselPosition(); // Update its main display
+            }
+            this.selectionOverlayElem.classList.remove('active'); // Close overlay
+        }
+    }
+
+    // Handles clicks on the selection overlay background to close it
+    handleOverlayClick(event) {
+        if (event.target === this.selectionOverlayElem) {
+            this.selectionOverlayElem.classList.remove('active');
+        }
+    }
+
+    // Handles wheel scrolling on the selection overlay
+    handleSelectionWheelScroll(event) {
+        event.preventDefault();
+        const activeCarousel = this.selectionOverlayElem.currentActiveCarousel;
+        if (activeCarousel) {
+            let newLogicalValue = activeCarousel.getValue();
+            if (event.deltaY > 0) { // Scroll down
+                newLogicalValue = (newLogicalValue + 1);
+            } else { // Scroll up
+                newLogicalValue = (newLogicalValue - 1);
+            }
+            // Wrap around logic
+            if (newLogicalValue > activeCarousel.maxValue) newLogicalValue = activeCarousel.minValue;
+            if (newLogicalValue < activeCarousel.minValue) newLogicalValue = activeCarousel.maxValue;
+
+            activeCarousel.setValue(newLogicalValue); // Update value
+            activeCarousel.updateMainCarouselPosition(); // Update main display
+
+            // Update overlay position (snap back for infinite scroll)
+            this.selectionItemsElem.style.transition = `transform 0.2s ease-out`; // Ensure transition
+            this.updateSelectionCarouselPosition(newLogicalValue, true);
+        }
+    }
+
+    // Sets up event listeners for the selection overlay
+    setupSelectionOverlayEvents() {
+        // Add click listener to the overlay background
+        this.selectionOverlayElem.addEventListener('click', this.handleOverlayClick);
+        // Add click listener to items within the selection items container
+        this.selectionItemsElem.addEventListener('click', this.handleSelectionItemClick);
+        // Add wheel listener to the selection carousel itself
+        this.selectionOverlayElem.querySelector('.selection-carousel').addEventListener('wheel', this.handleSelectionWheelScroll);
+    }
+
+
+    // Public methods to get/set value
+    getValue() {
+        return this.currentValue;
+    }
+
+    setValue(newValue) {
+        if (newValue >= this.minValue && newValue <= this.maxValue) {
+            this.currentValue = newValue;
+            this.updateMainCarouselPosition(); // Keep main display updated
+        }
+    }
+}
+
+// --- Initialize all carousels ---
+let mainHoursCarousel, mainMinutesCarousel;
+let pauseDurationHoursCarousel, pauseDurationMinutesCarousel;
+let pauseEndHoursCarousel, pauseEndMinutesCarousel;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+
+    // Main Alarm Carousels
+    mainHoursCarousel = new TimeCarousel(
+        'hours-carousel', 'hours-items',
+        'hours-selection-overlay', 'hours-selection-items',
+        0, 23, now.getHours()
+    );
+    mainMinutesCarousel = new TimeCarousel(
+        'minutes-carousel', 'minutes-items',
+        'minutes-selection-overlay', 'minutes-selection-items',
+        0, 59, now.getMinutes()
+    );
+
+    // You also need to add the HTML elements for these pause carousels
+    // and their respective selection overlays if you want them to function.
+    // For example, in your HTML body, you'd need divs like:
+    // <div class="selection-overlay" id="pause-duration-hours-selection-overlay">...</div>
+    // <div class="selection-overlay" id="pause-duration-minutes-selection-overlay">...</div>
+    // and so on for pause-end carousels.
+    // Without those HTML elements, these lines will throw errors.
+
+    // Pause Duration Carousels (start at 0 hours, 0 minutes by default)
+    // Make sure you have the corresponding HTML elements for these IDs
+    // For example: <div class="carousel" id="pause-duration-hours-carousel">...</div>
+    // and the respective selection overlay divs.
+    try {
+        pauseDurationHoursCarousel = new TimeCarousel(
+            'pause-duration-hours-carousel', 'pause-duration-hours-items',
+            'hours-selection-overlay', 'hours-selection-items', // Reusing hours overlay for simplicity
+            0, 23, 0 // Initial value for hours in duration
+        );
+    } catch (e) {
+        console.warn("Could not initialize pauseDurationHoursCarousel. Make sure its HTML elements exist. Error:", e);
+    }
+    try {
+        pauseDurationMinutesCarousel = new TimeCarousel(
+            'pause-duration-minutes-carousel', 'pause-duration-minutes-items',
+            'minutes-selection-overlay', 'minutes-selection-items', // Reusing minutes overlay for simplicity
+            0, 59, 0 // Initial value for minutes in duration
+        );
+    } catch (e) {
+        console.warn("Could not initialize pauseDurationMinutesCarousel. Make sure its HTML elements exist. Error:", e);
+    }
+
+    // Pause End Time Carousels (start at current time + 1 hour, current minute)
+    // Make sure you have the corresponding HTML elements for these IDs
+    try {
+        pauseEndHoursCarousel = new TimeCarousel(
+            'pause-end-hours-carousel', 'pause-end-hours-items',
+            'hours-selection-overlay', 'hours-selection-items', // Reusing hours overlay for simplicity
+            0, 23, (now.getHours() + 1) % 24
+        );
+    } catch (e) {
+        console.warn("Could not initialize pauseEndHoursCarousel. Make sure its HTML elements exist. Error:", e);
+    }
+    try {
+        pauseEndMinutesCarousel = new TimeCarousel(
+            'pause-end-minutes-carousel', 'pause-end-minutes-items',
+            'minutes-selection-overlay', 'minutes-selection-items', // Reusing minutes overlay for simplicity
+            0, 59, now.getMinutes()
+        );
+    } catch (e) {
+        console.warn("Could not initialize pauseEndMinutesCarousel. Make sure its HTML elements exist. Error:", e);
+    }
+
+
+    // --- Expose global functions for the main alarm clock script ---
+    // (These are needed if the alarm clock logic is in a separate script
+    // that expects these global functions, like your v1.1_alarm-clock.js)
+    window.getSelectedHour = () => mainHoursCarousel.getValue();
+    window.getSelectedMinute = () => mainMinutesCarousel.getValue();
+    window.setInitialTime = (h, m) => {
+        mainHoursCarousel.setValue(h);
+        mainMinutesCarousel.setValue(m);
+    };
+
+    // You would also expose functions to get values from pause carousels if needed by alarm-clock.js
+    window.getPauseDurationHour = () => pauseDurationHoursCarousel ? pauseDurationHoursCarousel.getValue() : 0;
+    window.getPauseDurationMinute = () => pauseDurationMinutesCarousel ? pauseDurationMinutesCarousel.getValue() : 0;
+    window.getPauseEndHour = () => pauseEndHoursCarousel ? pauseEndHoursCarousel.getValue() : 0;
+    window.getPauseEndMinute = () => pauseEndMinutesCarousel ? pauseEndMinutesCarousel.getValue() : 0;
+
+});
+</script>
+</body>
+</html>
